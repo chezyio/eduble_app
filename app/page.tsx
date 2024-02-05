@@ -1,113 +1,325 @@
+"use client";
+import { set, z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
 import Image from "next/image";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+const ACCEPTED_IMAGE_TYPES = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+];
+
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import eddy from "../public/eddy.png";
+import eduble from "../public/eduble.png";
+
+const formSchema = z.object({
+    profileImage: z.any(),
+});
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    const [transcript, setTranscript] = useState<string>("");
+    const [summarize, setSummarize] = useState<string>("");
+    const [notes, setNotes] = useState<string>("");
+    const [translate, setTranslate] = useState<string>("");
+    const [quiz, setQuiz] = useState<string>("");
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+    });
+
+    // 2. Define a submit handler.
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const formData = new FormData();
+        formData.append("file", values.profileImage);
+        console.log(values.profileImage);
+
+        await fetch("http://127.0.0.1:5328/api/video", {
+            method: "POST",
+            body: formData,
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // Call .json() to parse the JSON data
+            })
+            .then((data) => {
+                console.log("Received data from Flask server:", data);
+                // Do something with the received data
+                setTranscript(data.transcript);
+                setSummarize(data.summarized_text);
+                setTranslate(data.translated_chinese);
+            })
+            .catch((error) => console.error("Error:", error));
+    }
+
+    return (
+        <div>
+            <main className="flex min-h-screen flex-col">
+                <section className="container p-6 space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+                    <div className="flex max-w-[64rem] flex-col items-center gap-4 text-center mx-auto">
+                        <p className="font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+                            Meet Eduble
+                        </p>
+                        <p className="max-w-[40rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8 my-2">
+                            Micro Learning, Mega Knowledge
+                        </p>
+                        <div className="space-x-4">
+                            <Link
+                                href="/login"
+                                className={cn(buttonVariants({ size: "lg" }))}
+                            >
+                                Get Started
+                            </Link>
+                            <Link
+                                href="/"
+                                target="_blank"
+                                rel="noreferrer"
+                                className={cn(
+                                    buttonVariants({
+                                        variant: "outline",
+                                        size: "lg",
+                                    })
+                                )}
+                            >
+                                Learn More
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="container p-6 space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+                    <div className="flex max-w-[64rem] flex-col items-center gap-4 text-center mx-auto">
+                        <p className="font-bold text-3xl sm:text-3xl md:text-4xl lg:text-5xl">
+                            {/* Elevate Your Studying Experience */}
+                            Welcome to a new era of learning
+                        </p>
+                        <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+                            Your key to a seamless lecture starts here
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="bg-neutral-100 rounded-2xl flex flex-col items-center p-10 dark:bg-neutral-900">
+                            <div className="mb-4">
+                                <Image src={eddy} alt="image" height={300} />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold mb-2">
+                                    Meet Eddy
+                                </p>
+                                <p className="text-md">
+                                    Eduble first takes a lecture video in any
+                                    language and transcripts the audio, with the
+                                    option of converting it to English. It then
+                                    outputs the auto-generated transcript on to
+                                    the screen for the Student to read and use
+                                    for note taking.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="bg-neutral-100 rounded-2xl flex flex-col items-center p-10 dark:bg-neutral-900">
+                            <div className="mb-4">
+                                <Image src={eduble} alt="image" height={300} />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold mb-2">
+                                    Eduble Engine
+                                </p>
+                                <p className="text-md">
+                                    {" "}
+                                    Eduble is a AI-powered Educational Assistant
+                                    developed with the aim of helping students
+                                    from any background study more effectively
+                                    and efficiently through the help of
+                                    Artificial Intelligence (AI)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="container p-6 space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+                    <div className="flex max-w-[64rem] flex-col items-center gap-4 text-center mx-auto">
+                        <p className="font-bold text-3xl sm:text-3xl md:text-4xl lg:text-5xl mb-6">
+                            Be ready to be amazed
+                        </p>
+                    </div>
+                    <div className="flex max-w-[64rem] flex-row gap-8 mx-auto">
+                        {/* left */}
+                        <div className="grid w-full">
+                            <div className="my-4">
+                                <Form {...form}>
+                                    <form
+                                        onSubmit={form.handleSubmit(onSubmit)}
+                                        className="space-y-4"
+                                    >
+                                        <FormLabel>Upload your video</FormLabel>
+                                        <FormField
+                                            control={form.control}
+                                            name="profileImage"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <Input
+                                                            accept=".jpg, .jpeg, .png, .svg, .gif, .mp4"
+                                                            type="file"
+                                                            name="profileImage"
+                                                            onChange={(e) =>
+                                                                field.onChange(
+                                                                    e.target
+                                                                        .files
+                                                                        ? e
+                                                                              .target
+                                                                              .files[0]
+                                                                        : null
+                                                                )
+                                                            }
+                                                        />
+                                                    </FormControl>
+
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <Button type="submit">Submit</Button>
+                                    </form>
+                                </Form>
+                            </div>
+                        </div>
+                        {/* right */}
+                        <div>
+                            <Tabs
+                                defaultValue="transcript"
+                                className="w-[600px]"
+                            >
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="transcript">
+                                        Transcript
+                                    </TabsTrigger>
+                                    <TabsTrigger value="summarize">
+                                        Summarize
+                                    </TabsTrigger>
+                                    {/* <TabsTrigger value="notes">
+                                        Notes
+                                    </TabsTrigger> */}
+                                    <TabsTrigger value="translate">
+                                        Translate
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="transcript">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Transcript</CardTitle>
+                                            <CardDescription>
+                                                Get the transcript of your
+                                                content
+                                            </CardDescription>
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-2">
+                                            <Button>Download</Button>
+
+                                            {transcript
+                                                .split("\n")
+                                                .map((text) => (
+                                                    <div
+                                                        key={Math.random()}
+                                                        className="mb-2"
+                                                    >
+                                                        {text}
+                                                        {"\n"}
+                                                    </div>
+                                                ))}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                                <TabsContent value="summarize">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Summarize</CardTitle>
+                                            <CardDescription>
+                                                Get a quick summary of your
+                                                content
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                            {summarize
+                                                .split("\n")
+                                                .map((text) => (
+                                                    <div
+                                                        key={Math.random()}
+                                                        className="mb-2"
+                                                    >
+                                                        {text}
+                                                        {"/n"}
+                                                    </div>
+                                                ))}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                                {/* <TabsContent value="notes">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Notes</CardTitle>
+                                            <CardDescription>
+                                                Make changes to your account
+                                                here. Click save when you're
+                                                done.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                            {notes}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent> */}
+                                <TabsContent value="translate">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Translate</CardTitle>
+                                            <CardDescription>
+                                                Get a transalation of your
+                                                content
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                            {translate}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            </Tabs>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    );
 }
